@@ -6,11 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -20,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.renderscript.ScriptGroup;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +34,9 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -38,6 +46,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Url;
 
 
 public class MainActivity extends AppCompatActivity implements  View.OnClickListener{
@@ -157,37 +166,37 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                 call.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) { //response.body = string
+                        String filename = "http://192.168.0.60:80/mosaicImage/" + response.body();
+                        Log.d("filename",filename);
                         if (response.isSuccessful()) {
                             Log.d("성공", "성공");
-//                            adapter.addItem(response.body());
+
                             //화면에 이미지 보여주기
                             try {
-                                // 선택한 이미지에서 비트맵 생성
-//                                InputStream in = getContentResolver().openInputStream(response.body());
-//                                Bitmap img = BitmapFactory.decodeStream(in);
-//                                in.close();
-//                                // 이미지 표시
-//                                imageView.setImageBitmap(img);
+                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+//                                runOnUiThread(()->{
+//                                    Picasso.with(getApplicationContext())
+//                                            .load("http://192.168.0.60:80/mosaicImage/" + response.body())
+//                                            .into(new Target() {
+//                                                @Override
+//                                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                                                    Log.d("load", "load");
+//                                                    imageView.setImageBitmap(bitmap);
+//                                                }
+//
+//                                                @Override
+//                                                public void onBitmapFailed(Drawable errorDrawable) {
+//                                                    Log.d("fail", "fail");
+//                                                }
+//
+//                                                @Override
+//                                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                                    Log.d("prepare", "prepare");
+//                                                }
+//                                            });
+//                                });
 
 
-//                                Picasso.with(getApplicationContext())
-//                                        .load("http://192.249.19.250:6380/upload/" + response.body())
-//                                        .into(new Target() {
-//                                            @Override
-//                                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                                                imageView.setImageBitmap(bitmap);
-//                                            }
-//
-//                                            @Override
-//                                            public void onBitmapFailed(Drawable errorDrawable) {
-//
-//                                            }
-//
-//                                            @Override
-//                                            public void onPrepareLoad(Drawable placeHolderDrawable) {
-//
-//                                            }
-//                                        });
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

@@ -13,8 +13,8 @@ import retrofit2.http.Query;
 
 public interface RetrofitInterface {
 
-    public static final String API_URL = "http://192.168.0.58:80";
-
+//    public static final String API_URL = "http://192.168.0.58:80";
+    public static final String API_URL = "http://192.168.0.60:80";
     @Multipart
     @POST("uploadImage")
     Call<String> uploadImage(@Part MultipartBody.Part file);
