@@ -23,6 +23,9 @@ public interface RetrofitInterface {
     @POST("uploadVideo")
     Call<String> uploadVideo(@Part MultipartBody.Part file);
 
-    @GET("hi")
-    Call<String> getRoutes();
+    @GET("videoName")
+    Call<String> getVideoName(@Query("filename") String filename);
+
+//    @GET("hi")
+//    Call<String> getRoutes();
 }

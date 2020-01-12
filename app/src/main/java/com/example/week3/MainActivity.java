@@ -8,11 +8,14 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -20,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -32,9 +36,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.VideoView;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -59,6 +72,12 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     Retrofit retrofit;
     RetrofitInterface retrofitInterface;
 
+    private RelativeLayout bigView;
+    private ImageView bigImg;
+    private Button storeButton;
+    private Button shareButton;
+    private LinearLayout buttonLayout;
+    private VideoView videoView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         }
 
         imageView = (ImageView)findViewById(R.id.image);
-
+        videoView = findViewById(R.id.video);
 
         fab_open = AnimationUtils.loadAnimation(mContext, R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(mContext, R.anim.fab_close);
@@ -89,12 +108,55 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         fab_sub1 = (FloatingActionButton) findViewById(R.id.fab_sub1_camera);
         fab_sub2 = (FloatingActionButton) findViewById(R.id.fab_sub2_bring);
 
-
-
         fab_main.setOnClickListener(this);
         fab_sub1.setOnClickListener(this);
         fab_sub2.setOnClickListener(this);
 
+//        bigView = findViewById(R.id.bigView);
+//        buttonLayout = findViewById(R.id.ButtonLayout);
+//        storeButton = findViewById(R.id.Store);
+//        shareButton = findViewById(R.id.Share);
+
+//        shareButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                new Thread() {
+//                    public void run() {
+//                        Intent intent = new Intent(Intent.ACTION_SEND);
+//                        intent.setType("image/*");
+//                        //Uri imgUri = FileProvider.getUriForFile(requireContext(), requireContext().getPackageName().concat(".provider"), new File(bigImg.getContentDescription().toString()));
+//                        try {
+//                            URL url = new URL("http://192.249.19.250:7680/upload/" + bigImg.getContentDescription());
+//                            File f = new File(getApplicationContext().getExternalCacheDir(), "tmp");
+//                            f.createNewFile();
+//
+//                            InputStream is = url.openStream();
+//                            OutputStream os = new FileOutputStream(f);
+//                            byte[] b = new byte[2048];
+//                            int length;
+//
+//                            while ((length = is.read(b)) != -1) {
+//                                os.write(b, 0, length);
+//                            }
+//
+//                            is.close();
+//                            os.close();
+//
+//                            Uri imgUri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName().concat(".provider"), f);
+//                            intent.putExtra(Intent.EXTRA_STREAM, imgUri);
+//                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                            startActivity(Intent.createChooser(intent, "Share image"));
+//                        } catch (MalformedURLException e) {
+//                            e.printStackTrace();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }.start();
+//
+//            }
+//        });
     }
 
 
@@ -107,8 +169,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             case R.id.fab_sub1_camera:
                 toggleFab();
-//                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-//                startActivity(intent);
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent. setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "video/*");
                 startActivityForResult(intent, 2);
@@ -157,7 +217,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 File file = new File(getPath(getApplicationContext(), data.getData()));
-
                 Log.d("hihi", getPath(getApplicationContext(), data.getData()));
 
                 RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -179,7 +238,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
                             //화면에 이미지 보여주기
                             try {
-                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+                                videoView.setVisibility(VideoView.GONE);
+                                imageView.setVisibility(ImageView.VISIBLE);
+                                Picasso.with(getApplicationContext()).load(filename).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).into(imageView);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -187,8 +248,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                         else {
                             Log.d("onResponse", "failure");
                         }
-
-
                     }
 
                     @Override
@@ -200,31 +259,41 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             }
         } else if (requestCode == 2) {
             Log.d("resultcode", Integer.toString(resultCode));
+            String filename = "http://192.168.0.60:80/mosaicVideo/20200112_234722.mp4";
+            imageView.setVisibility(ImageView.INVISIBLE);
+            videoView.setVisibility(VideoView.VISIBLE);
+            String uriPath = "android.resource://" + getPackageName() + "/" + R.raw.result;
+            Log.d("uripath", uriPath);
+            Uri uri = Uri.parse(uriPath);
+            videoView.setVideoURI(uri);
+            videoView.requestFocus();
+            videoView.start();
+//            videoView.setVideoPath(filename);
             // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                File file = new File(getPath(getApplicationContext(), data.getData()));
-                Log.d("hi", getPath(getApplicationContext(), data.getData()));
-
-                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
-                Log.d("filename", body.toString());
-
-                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
-                retrofitInterface = retrofit.create(RetrofitInterface.class);
-
-                Call<String> call = retrofitInterface.uploadVideo(body);
-
-                call.enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
-                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
-                        Log.d("filename",filename);
-                        if (response.isSuccessful()) {
-                            Log.d("성공", "성공");
-
-                            //화면에 이미지 보여주기
-                            try {
-                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+//            if (resultCode == RESULT_OK) {
+//                File file = new File(getPath(getApplicationContext(), data.getData()));
+//                Log.d("hi", getPath(getApplicationContext(), data.getData()));
+//
+//                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+//                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
+//                Log.d("filename", body.toString());
+//
+//                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
+//                retrofitInterface = retrofit.create(RetrofitInterface.class);
+//
+//                Call<String> call = retrofitInterface.uploadVideo(body);
+//
+//                call.enqueue(new Callback<String>() {
+//                    @Override
+//                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
+//                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
+//                        Log.d("filename",filename);
+//                        if (response.isSuccessful()) {
+//                            Log.d("성공", "성공");
+//
+//                            //화면에 이미지 보여주기
+//                            try {
+//                                Picasso.with(getApplicationContext()).load(filename).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).into(imageView);
 //                                runOnUiThread(()->{
 //                                    Picasso.with(getApplicationContext())
 //                                            .load("http://192.168.0.60:80/mosaicImage/" + response.body())
@@ -248,21 +317,21 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 //                                });
 
 
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        else {
-                            Log.d("onResponse", "failure");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        Log.d("onFailure", t.toString());
-                    }
-                });
-            }
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                        else {
+//                            Log.d("onResponse", "failure");
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<String> call, Throwable t) {
+//                        Log.d("onFailure", t.toString());
+//                    }
+//                });
+//            }
         }
     }
 
@@ -345,28 +414,5 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
