@@ -18,9 +18,10 @@ public interface RetrofitInterface {
     @Multipart
     @POST("uploadImage")
     Call<String> uploadImage(@Part MultipartBody.Part file);
-//    @FormUrlEncoded
-//    @POST("uploadImage")
-//    Call<String> uploadImage(@Field("image") String image);
+
+    @Multipart
+    @POST("uploadVideo")
+    Call<String> uploadVideo(@Part MultipartBody.Part file);
 
     @GET("hi")
     Call<String> getRoutes();

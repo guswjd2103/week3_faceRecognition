@@ -107,8 +107,11 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             case R.id.fab_sub1_camera:
                 toggleFab();
-                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivity(intent);
+//                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+//                startActivity(intent);
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent. setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "video/*");
+                startActivityForResult(intent, 2);
                 break;
 
             case R.id.fab_sub2_bring:
@@ -154,6 +157,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 File file = new File(getPath(getApplicationContext(), data.getData()));
+
+                Log.d("hihi", getPath(getApplicationContext(), data.getData()));
+
                 RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
                 MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
                 Log.d("filename", body.toString());
@@ -167,6 +173,51 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) { //response.body = string
                         String filename = "http://192.168.0.60:80/mosaicImage/" + response.body();
+                        Log.d("filename",filename);
+                        if (response.isSuccessful()) {
+                            Log.d("성공", "성공");
+
+                            //화면에 이미지 보여주기
+                            try {
+                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        else {
+                            Log.d("onResponse", "failure");
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        Log.d("onFailure", t.toString());
+                    }
+                });
+
+            }
+        } else if (requestCode == 2) {
+            Log.d("resultcode", Integer.toString(resultCode));
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                File file = new File(getPath(getApplicationContext(), data.getData()));
+                Log.d("hi", getPath(getApplicationContext(), data.getData()));
+
+                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
+                Log.d("filename", body.toString());
+
+                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
+                retrofitInterface = retrofit.create(RetrofitInterface.class);
+
+                Call<String> call = retrofitInterface.uploadVideo(body);
+
+                call.enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
+                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
                         Log.d("filename",filename);
                         if (response.isSuccessful()) {
                             Log.d("성공", "성공");
@@ -204,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                         else {
                             Log.d("onResponse", "failure");
                         }
-
                     }
 
                     @Override
@@ -212,7 +262,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                         Log.d("onFailure", t.toString());
                     }
                 });
-
             }
         }
     }
