@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
@@ -43,6 +44,7 @@ import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +66,7 @@ import retrofit2.http.Url;
 
 public class MainActivity extends AppCompatActivity implements  View.OnClickListener{
 
-    private Context mContext;
+    private static Context mContext;
     private FloatingActionButton fab_main, fab_sub1, fab_sub2, fab_sub3;
     private ImageView imageView;
     private VideoView videoView;
@@ -80,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     private Button backButton;
     private Button storeButton;
     private LinearLayout buttonLayout;
+    private String files;
+    String basePath = null;
 //    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     @Override
@@ -123,6 +127,16 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         imageView.setOnClickListener(this);
         videoView.setOnClickListener(this);
 
+//        File directory = new File(android.os.Environment.getExternalStorageDirectory() + File.separator + AppConstant.PHOTO_ALBUM);
+//        File a = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//        Log.d("aaa",mediaStorageDir.getPath());
+
+//        if (!directory.exists()){
+//            if(!directory.mkdirs()){
+//                Log.e("tab2","failed to create directory");
+//            }
+//        }
+//        basePath = directory.getPath();
 //        thread = new Thread(new Runnable() {
 //            @Override
 //            public void run() {
@@ -135,10 +149,24 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 //        });
 
 //        shareButton = (Button) findViewById(R.id.Share);
-//        storeButton = (Button) findViewById(R.id.store);
+        storeButton = (Button) findViewById(R.id.Store);
 //        backButton = (Button) findViewById(R.id.Back);
 //        bigView = findViewById(R.id.bigView);
 //        imageView = (ImageView)findViewById(R.id.imgView);
+        storeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("store button", "store");
+
+
+                String folder = "";
+                String filename = files;
+                BitmapDrawable draw = (BitmapDrawable)((ImageView) findViewById(R.id.image)).getDrawable();
+                Bitmap b = draw.getBitmap();
+                saveBitmaptoJpeg(b, folder, filename);
+
+            }
+        });
 
     }
 
@@ -230,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                 call.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) { //response.body = string
+                        files = response.body();
                         String filename = "http://192.168.0.60:80/mosaicImage/" + response.body();
                         Log.d("filename",filename);
                         if (response.isSuccessful()) {
@@ -398,6 +427,35 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
         return null;
     }
+
+    public static void saveBitmaptoJpeg(Bitmap bitmap, String folder, String name){
+        String ex_storage =Environment.getExternalStorageDirectory().getAbsolutePath();
+        // Get Absolute Path in External Sdcard
+        String foler_name = "/"+folder+"/";
+        String file_name = name+".jpg";
+        String string_path = ex_storage+foler_name;
+
+        File file_path;
+        try{
+            file_path = new File(string_path);
+            if(!file_path.isDirectory()){
+                file_path.mkdirs();
+            }
+            FileOutputStream out = new FileOutputStream(string_path+file_name);
+
+            Log.d("store path", string_path);
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
+            mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + string_path+file_name)));
+            out.close();
+
+        }catch(FileNotFoundException exception){
+            Log.e("FileNotFoundException", exception.getMessage());
+        }catch(IOException exception){
+            Log.e("IOException", exception.getMessage());
+        }
+    }
+
 
     public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
         Cursor cursor = null;
