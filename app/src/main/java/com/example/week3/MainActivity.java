@@ -41,6 +41,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     private Button storeButton;
     private LinearLayout buttonLayout;
     private String files;
+    private static Uri contentUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         imageView.setOnClickListener(this);
         videoView.setOnClickListener(this);
 
-        shareButton = (Button) findViewById(R.id.Share);
+        // 저장
         storeButton = (Button) findViewById(R.id.Store);
         storeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,9 +133,54 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                 BitmapDrawable draw = (BitmapDrawable)((ImageView) findViewById(R.id.image)).getDrawable();
                 Bitmap b = draw.getBitmap();
                 saveBitmaptoJpeg(b, folder, filename);
+                Toast myToast = Toast.makeText(getApplicationContext(), "success store", Toast.LENGTH_SHORT);
+                myToast.show();
 
             }
         });
+
+        // 공유
+        shareButton = (Button) findViewById(R.id.Share);
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread() {
+                        public void run() {
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("image/*");
+                    //Uri imgUri = FileProvider.getUriForFile(requireContext(), requireContext().getPackageName().concat(".provider"), new File(bigImg.getContentDescription().toString()));
+                    try {
+                        URL url = new URL("http://192.168.0.60:80/mosaicImage/" + files +  imageView.getContentDescription());
+                        File f = new File(getApplicationContext().getExternalCacheDir(), "tmp");
+                        f.createNewFile();
+
+                        InputStream is = url.openStream();
+                        OutputStream os = new FileOutputStream(f);
+                        byte[] b = new byte[2048];
+                        int length;
+
+                        while ((length = is.read(b)) != -1) {
+                            os.write(b, 0, length);
+                        }
+
+                        is.close();
+                        os.close();
+
+                        Uri imgUri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName().concat(".provider"), f);
+                        intent.putExtra(Intent.EXTRA_STREAM, imgUri);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(Intent.createChooser(intent, "Share image"));
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                        }
+                }.start();
+            }
+        });
+
+
 
     }
 
@@ -279,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             }
             else if (isDownloadsDocument(uri)) {
                 final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
+                contentUri = ContentUris.withAppendedId(
                         Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
                 return getDataColumn(context, contentUri, null, null);
             }
