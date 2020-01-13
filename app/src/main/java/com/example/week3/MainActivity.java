@@ -7,26 +7,23 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.camera.core.AspectRatio;
-import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureConfig;
-import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -34,21 +31,23 @@ import android.provider.MediaStore;
 import android.renderscript.ScriptGroup;
 import android.util.Base64;
 import android.util.Log;
-import android.util.Rational;
-import android.util.Size;
-import android.view.Surface;
-import android.view.TextureView;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.VideoView;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -62,20 +61,23 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Url;
 
-import androidx.camera.core.CameraX;
-import androidx.lifecycle.LifecycleOwner;
 
-public class MainActivity extends AppCompatActivity implements  View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements  View.OnClickListener{
 
     private Context mContext;
     private FloatingActionButton fab_main, fab_sub1, fab_sub2;
     private ImageView imageView;
-    private TextureView mTextureView;
     private Animation fab_open, fab_close;
     private boolean isFabOpen = false;
     Retrofit retrofit;
     RetrofitInterface retrofitInterface;
 
+    private RelativeLayout bigView;
+    private ImageView bigImg;
+    private Button storeButton;
+    private Button shareButton;
+    private LinearLayout buttonLayout;
+    private VideoView videoView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,12 +99,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         }
 
         imageView = (ImageView)findViewById(R.id.image);
-
-        mTextureView = (TextureView) findViewById(R.id.camera_texture_view);
-        startCamera();
-
-
-
+        videoView = findViewById(R.id.video);
 
         fab_open = AnimationUtils.loadAnimation(mContext, R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(mContext, R.anim.fab_close);
@@ -111,17 +108,56 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         fab_sub1 = (FloatingActionButton) findViewById(R.id.fab_sub1_camera);
         fab_sub2 = (FloatingActionButton) findViewById(R.id.fab_sub2_bring);
 
-
-
         fab_main.setOnClickListener(this);
         fab_sub1.setOnClickListener(this);
         fab_sub2.setOnClickListener(this);
 
+//        bigView = findViewById(R.id.bigView);
+//        buttonLayout = findViewById(R.id.ButtonLayout);
+//        storeButton = findViewById(R.id.Store);
+//        shareButton = findViewById(R.id.Share);
+
+//        shareButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                new Thread() {
+//                    public void run() {
+//                        Intent intent = new Intent(Intent.ACTION_SEND);
+//                        intent.setType("image/*");
+//                        //Uri imgUri = FileProvider.getUriForFile(requireContext(), requireContext().getPackageName().concat(".provider"), new File(bigImg.getContentDescription().toString()));
+//                        try {
+//                            URL url = new URL("http://192.249.19.250:7680/upload/" + bigImg.getContentDescription());
+//                            File f = new File(getApplicationContext().getExternalCacheDir(), "tmp");
+//                            f.createNewFile();
+//
+//                            InputStream is = url.openStream();
+//                            OutputStream os = new FileOutputStream(f);
+//                            byte[] b = new byte[2048];
+//                            int length;
+//
+//                            while ((length = is.read(b)) != -1) {
+//                                os.write(b, 0, length);
+//                            }
+//
+//                            is.close();
+//                            os.close();
+//
+//                            Uri imgUri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName().concat(".provider"), f);
+//                            intent.putExtra(Intent.EXTRA_STREAM, imgUri);
+//                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                            startActivity(Intent.createChooser(intent, "Share image"));
+//                        } catch (MalformedURLException e) {
+//                            e.printStackTrace();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }.start();
+//
+//            }
+//        });
     }
-
-
-
-
 
 
     @Override
@@ -172,104 +208,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     //camera settinig
     private void startCamera() {
 
-
-        CameraX.unbindAll();
-        Size screen = new Size(mTextureView.getWidth(), mTextureView.getHeight()); //size of the screen
-
-
-        // Rational aspectRatio = new Rational (mTextureView.getWidth(), mTextureView.getHeight());
-        // AspectRatio aspectRatio = new AspectRatio();
-        // setTargetAspectRatio(aspectRatio)
-
-
-        PreviewConfig pConfig = new PreviewConfig.Builder().setTargetResolution(screen).build();
-        Preview preview = new Preview(pConfig);
-
-        preview.setOnPreviewOutputUpdateListener(
-                new Preview.OnPreviewOutputUpdateListener() {
-                    //to update the surface texture we  have to destroy it first then re-add it
-                    @Override
-                    public void onUpdated(Preview.PreviewOutput output){
-                        ViewGroup parent = (ViewGroup) mTextureView.getParent();
-                        parent.removeView(mTextureView);
-                        parent.addView(mTextureView, 0);
-
-                        mTextureView.setSurfaceTexture(output.getSurfaceTexture());
-                        updateTransform();
-                    }
-                });
-
-
-        ImageCaptureConfig imageCaptureConfig = new ImageCaptureConfig.Builder().setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
-                .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation()).build();
-        final ImageCapture imgCap = new ImageCapture(imageCaptureConfig);
-
-//        findViewById(R.id.imgCapture).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                File file = new File(Environment.getExternalStorageDirectory() + "/" + System.currentTimeMillis() + ".png");
-//                imgCap.takePicture(file, new ImageCapture.OnImageSavedListener() {
-//                    @Override
-//                    public void onImageSaved(@NonNull File file) {
-//                        String msg = "Pic captured at " + file.getAbsolutePath();
-//                        Toast.makeText(getBaseContext(), msg,Toast.LENGTH_LONG).show();
-//                    }
-//
-//                    @Override
-//                    public void onError(@NonNull ImageCapture.UseCaseError useCaseError, @NonNull String message, @Nullable Throwable cause) {
-//                        String msg = "Pic capture failed : " + message;
-//                        Toast.makeText(getBaseContext(), msg,Toast.LENGTH_LONG).show();
-//                        if(cause != null){
-//                            cause.printStackTrace();
-//                        }
-//                    }
-//                });
-//            }
-//        });
-
-        //bind to lifecycle:
-        CameraX.bindToLifecycle((LifecycleOwner)this, preview, imgCap);
-
     }
-
-
-
-
-    private void updateTransform(){
-        Matrix mx = new Matrix();
-        float w = mTextureView.getMeasuredWidth();
-        float h = mTextureView.getMeasuredHeight();
-
-        float cX = w / 2f;
-        float cY = h / 2f;
-
-        int rotationDgr;
-        int rotation = (int)mTextureView.getRotation();
-
-        switch(rotation){
-            case Surface.ROTATION_0:
-                rotationDgr = 0;
-                break;
-            case Surface.ROTATION_90:
-                rotationDgr = 90;
-                break;
-            case Surface.ROTATION_180:
-                rotationDgr = 180;
-                break;
-            case Surface.ROTATION_270:
-                rotationDgr = 270;
-                break;
-            default:
-                return;
-        }
-
-        mx.postRotate((float)rotationDgr, cX, cY);
-        mTextureView.setTransform(mx);
-    }
-
-
-
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -302,7 +241,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
                             //화면에 이미지 보여주기
                             try {
-                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+                                videoView.setVisibility(VideoView.GONE);
+                                imageView.setVisibility(ImageView.VISIBLE);
+                                Picasso.with(getApplicationContext()).load(filename).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).into(imageView);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -323,31 +264,41 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             }
         } else if (requestCode == 2) {
             Log.d("resultcode", Integer.toString(resultCode));
+            String filename = "http://192.168.0.60:80/mosaicVideo/20200112_234722.mp4";
+            imageView.setVisibility(ImageView.INVISIBLE);
+            videoView.setVisibility(VideoView.VISIBLE);
+            String uriPath = "android.resource://" + getPackageName() + "/" + R.raw.result;
+            Log.d("uripath", uriPath);
+            Uri uri = Uri.parse(uriPath);
+            videoView.setVideoURI(uri);
+            videoView.requestFocus();
+            videoView.start();
+//            videoView.setVideoPath(filename);
             // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                File file = new File(getPath(getApplicationContext(), data.getData()));
-                Log.d("hi", getPath(getApplicationContext(), data.getData()));
-
-                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
-                Log.d("filename", body.toString());
-
-                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
-                retrofitInterface = retrofit.create(RetrofitInterface.class);
-
-                Call<String> call = retrofitInterface.uploadVideo(body);
-
-                call.enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
-                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
-                        Log.d("filename",filename);
-                        if (response.isSuccessful()) {
-                            Log.d("성공", "성공");
-
-                            //화면에 이미지 보여주기
-                            try {
-                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+//            if (resultCode == RESULT_OK) {
+//                File file = new File(getPath(getApplicationContext(), data.getData()));
+//                Log.d("hi", getPath(getApplicationContext(), data.getData()));
+//
+//                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+//                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
+//                Log.d("filename", body.toString());
+//
+//                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
+//                retrofitInterface = retrofit.create(RetrofitInterface.class);
+//
+//                Call<String> call = retrofitInterface.uploadVideo(body);
+//
+//                call.enqueue(new Callback<String>() {
+//                    @Override
+//                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
+//                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
+//                        Log.d("filename",filename);
+//                        if (response.isSuccessful()) {
+//                            Log.d("성공", "성공");
+//
+//                            //화면에 이미지 보여주기
+//                            try {
+//                                Picasso.with(getApplicationContext()).load(filename).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).into(imageView);
 //                                runOnUiThread(()->{
 //                                    Picasso.with(getApplicationContext())
 //                                            .load("http://192.168.0.60:80/mosaicImage/" + response.body())
@@ -371,21 +322,21 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 //                                });
 
 
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        else {
-                            Log.d("onResponse", "failure");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        Log.d("onFailure", t.toString());
-                    }
-                });
-            }
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                        else {
+//                            Log.d("onResponse", "failure");
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<String> call, Throwable t) {
+//                        Log.d("onFailure", t.toString());
+//                    }
+//                });
+//            }
         }
     }
 
@@ -468,28 +419,5 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

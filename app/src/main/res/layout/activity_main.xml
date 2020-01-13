@@ -8,42 +8,119 @@
     tools:context=".MainActivity">
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:orientation="vertical">-->
 
-        <TextureView
-            android:id="@+id/camera_texture_view"
-            android:layout_width="match_parent"
-            android:layout_height="450sp"
+<!--        <TextureView-->
+<!--            android:id="@+id/view_finder"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="302sp"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="412dp"
+            android:layout_height="299dp"
+            android:gravity="center"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="300dp"
-            android:layout_height="300dp" />
-    </LinearLayout>
+        <VideoView
+            android:id="@+id/video"
+            android:layout_width="419dp"
+            android:layout_height="292dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.498" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
+<!--    </LinearLayout>-->
 
-    <!--    <com.google.android.material.appbar.AppBarLayout-->
+<!--    -->
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/bigView"-->
 <!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:theme="@style/AppTheme.AppBarOverlay">-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:visibility="gone">-->
 
-<!--        <androidx.appcompat.widget.Toolbar-->
-<!--            android:id="@+id/toolbar"-->
+
+<!--        <LinearLayout-->
 <!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="?attr/actionBarSize"-->
-<!--            android:background="?attr/colorPrimary"-->
-<!--            app:popupTheme="@style/AppTheme.PopupOverlay" />-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:orientation="vertical">-->
 
-<!--    </com.google.android.material.appbar.AppBarLayout>-->
+<!--            <TextureView-->
+<!--                android:id="@+id/view_finder"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="302sp"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent" />-->
 
-<!--    <include layout="@layout/content_main" />-->
+<!--            <ImageView-->
+<!--                android:id="@+id/image"-->
+<!--                android:layout_width="300dp"-->
+<!--                android:layout_height="300dp" />-->
+<!--            -->
+<!--            <VideoView-->
+<!--                android:id="@+id/video"-->
+<!--                android:layout_width="300dp"-->
+<!--                android:layout_height="300dp" />-->
+<!--        </LinearLayout>-->
+
+
+<!--        <LinearLayout-->
+<!--            android:id="@+id/ButtonLayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:visibility="visible"-->
+<!--            style="?android:attr/buttonBarStyle">-->
+
+<!--&lt;!&ndash;            <Button&ndash;&gt;-->
+<!--&lt;!&ndash;                android:id="@+id/Back"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_width="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_height="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:text="Back"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_weight="1"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:textColor="#FFFFFF"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:background="#59000000"/>&ndash;&gt;-->
+
+<!--            <Button-->
+<!--                android:id="@+id/Store"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Info"-->
+<!--                android:textColor="#FFFFFF"-->
+<!--                android:layout_weight="1"-->
+<!--                android:background="#59000000"/>-->
+
+<!--            <Button-->
+<!--                android:id="@+id/Share"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Share"-->
+<!--                android:textColor="#FFFFFF"-->
+<!--                android:layout_weight="1"-->
+<!--                android:background="#59000000"/>-->
+
+<!--        </LinearLayout>-->
+
+<!--    </RelativeLayout>-->
+
 
 
 
