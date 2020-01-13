@@ -168,8 +168,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             case R.id.fab_sub3_webcam:
                 toggleFab();
-//                Intent intent3 = new Intent(MainActivity.this, cameraActivity.class);
-//                startActivity(intent3);
+                Intent intent3 = new Intent(MainActivity.this, cameraActivity.class);
+                startActivity(intent3);
                 break;
 
             case R.id.image:
@@ -237,7 +237,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
                             //화면에 이미지 보여주기
                             try {
-                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+                                videoView.setVisibility(View.GONE);
+                                imageView.setVisibility(View.VISIBLE);
+                                Picasso.with(getApplicationContext()).load(filename).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).into(imageView);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -258,79 +260,91 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             }
         } else if (requestCode == 2) {
             Log.d("resultcode", Integer.toString(resultCode));
+
+            String filename = "http://192.168.0.60:80/mosaicVideo/20200112_234722.mp4";
+            imageView.setVisibility(ImageView.INVISIBLE);
+            videoView.setVisibility(VideoView.VISIBLE);
+            String uriPath = "android.resource://" + getPackageName() + "/" + R.raw.result;
+            Log.d("uripath", uriPath);
+            Uri uri = Uri.parse(uriPath);
+            videoView.setVideoURI(uri);
+            videoView.requestFocus();
+            videoView.start();
+
             // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                File file = new File(getPath(getApplicationContext(), data.getData()));
-                Log.d("hi", getPath(getApplicationContext(), data.getData()));
-
-                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
-                Log.d("filename", body.toString());
-
-                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
-                retrofitInterface = retrofit.create(RetrofitInterface.class);
-
-                Call<String> call = retrofitInterface.uploadVideo(body);
-//                thread.start();
-
-                call.enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
-                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
-                        Log.d("filename",filename);
-
-                        if (response.isSuccessful()) {
-                            Log.d("성공", "성공");
-
-                            //화면에 이미지 보여주기
-                            try {
-
-                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        else {
-                            Log.d("onResponse", "failure");
-                        }
-
-//                        Thread thread2 = new Thread() {
-//                            @Override
-//                            public void run() {
-//                                mHandler.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
-//                                    Log.d("filename",filename);
-//                                    if (response.isSuccessful()) {
-//                                        Log.d("성공", "성공");
+//            if (resultCode == RESULT_OK) {
+//                File file = new File(getPath(getApplicationContext(), data.getData()));
+//                Log.d("hi", getPath(getApplicationContext(), data.getData()));
 //
-//                                        //화면에 이미지 보여주기
-//                                        try {
+//                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+//                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
+//                Log.d("filename", body.toString());
 //
-//                                            Picasso.with(getApplicationContext()).load(filename).into(imageView);
+//                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
+//                retrofitInterface = retrofit.create(RetrofitInterface.class);
 //
-//                                        } catch (Exception e) {
-//                                            e.printStackTrace();
-//                                        }
-//                                    }
-//                                    else {
-//                                        Log.d("onResponse", "failure");
-//                                    }
-//                                }
-//                            });
+//                Call<String> call = retrofitInterface.uploadVideo(body);
+////                thread.start();
+//
+//                call.enqueue(new Callback<String>() {
+//                    @Override
+//                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
+//                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
+//                        Log.d("filename",filename);
+//
+//                        if (response.isSuccessful()) {
+//                            Log.d("성공", "성공");
+//
+//                            //화면에 이미지 보여주기
+//                            try {
+//                                imageView.setVisibility(View.GONE);
+//                                videoView.setVisibility(View.VISIBLE);
+//                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
+//
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
 //                            }
-//                        };
-                    }
-
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        Log.d("onFailure", t.toString());
-                    }
-                });
-
-            }
+//                        }
+//                        else {
+//                            Log.d("onResponse", "failure");
+//                        }
+//
+////                        Thread thread2 = new Thread() {
+////                            @Override
+////                            public void run() {
+////                                mHandler.post(new Runnable() {
+////                                @Override
+////                                public void run() {
+////                                    String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
+////                                    Log.d("filename",filename);
+////                                    if (response.isSuccessful()) {
+////                                        Log.d("성공", "성공");
+////
+////                                        //화면에 이미지 보여주기
+////                                        try {
+////
+////                                            Picasso.with(getApplicationContext()).load(filename).into(imageView);
+////
+////                                        } catch (Exception e) {
+////                                            e.printStackTrace();
+////                                        }
+////                                    }
+////                                    else {
+////                                        Log.d("onResponse", "failure");
+////                                    }
+////                                }
+////                            });
+////                            }
+////                        };
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<String> call, Throwable t) {
+//                        Log.d("onFailure", t.toString());
+//                    }
+//                });
+//
+//            }
         }
     }
 

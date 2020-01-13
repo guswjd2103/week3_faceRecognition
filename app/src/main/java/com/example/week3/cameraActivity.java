@@ -8,18 +8,23 @@ import androidx.camera.core.Preview;
 import androidx.camera.core.PreviewConfig;
 import androidx.lifecycle.LifecycleOwner;
 
+import android.content.Intent;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class cameraActivity extends AppCompatActivity {
+
+public class cameraActivity extends AppCompatActivity implements  View.OnClickListener{
 
     private TextureView mTextureView;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +33,10 @@ public class cameraActivity extends AppCompatActivity {
 
         mTextureView = (TextureView) findViewById(R.id.camera_texture_view);
         startCamera();
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(this);
     }
-
-
 
     //camera settinig
     private void startCamera() {
@@ -103,10 +109,15 @@ public class cameraActivity extends AppCompatActivity {
         mTextureView.setTransform(mx);
     }
 
-
-
-
-
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.fab:
+                Intent intent3 = new Intent(cameraActivity.this, MainActivity.class);
+                startActivity(intent3);
+                break;
+        }
+    }
 }
 
 
