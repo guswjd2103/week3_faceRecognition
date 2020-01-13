@@ -14,7 +14,7 @@
         android:orientation="vertical">
 
         <TextureView
-            android:id="@+id/view_finder"
+            android:id="@+id/camera_texture_view"
             android:layout_width="match_parent"
             android:layout_height="302sp"
             app:layout_constraintEnd_toEndOf="parent"

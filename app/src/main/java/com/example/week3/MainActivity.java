@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -16,8 +17,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.camera.core.AspectRatio;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureConfig;
+import androidx.camera.core.Preview;
+import androidx.camera.core.PreviewConfig;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -27,12 +34,19 @@ import android.provider.MediaStore;
 import android.renderscript.ScriptGroup;
 import android.util.Base64;
 import android.util.Log;
+import android.util.Rational;
+import android.util.Size;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -48,12 +62,15 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Url;
 
+import androidx.camera.core.CameraX;
+import androidx.lifecycle.LifecycleOwner;
 
-public class MainActivity extends AppCompatActivity implements  View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements  View.OnClickListener {
 
     private Context mContext;
     private FloatingActionButton fab_main, fab_sub1, fab_sub2;
     private ImageView imageView;
+    private TextureView mTextureView;
     private Animation fab_open, fab_close;
     private boolean isFabOpen = false;
     Retrofit retrofit;
@@ -81,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
         imageView = (ImageView)findViewById(R.id.image);
 
+        mTextureView = (TextureView) findViewById(R.id.camera_texture_view);
+        startCamera();
+
+
+
 
         fab_open = AnimationUtils.loadAnimation(mContext, R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(mContext, R.anim.fab_close);
@@ -96,6 +118,10 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         fab_sub2.setOnClickListener(this);
 
     }
+
+
+
+
 
 
     @Override
@@ -146,7 +172,104 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     //camera settinig
     private void startCamera() {
 
+
+        CameraX.unbindAll();
+        Size screen = new Size(mTextureView.getWidth(), mTextureView.getHeight()); //size of the screen
+
+
+        // Rational aspectRatio = new Rational (mTextureView.getWidth(), mTextureView.getHeight());
+        // AspectRatio aspectRatio = new AspectRatio();
+        // setTargetAspectRatio(aspectRatio)
+
+
+        PreviewConfig pConfig = new PreviewConfig.Builder().setTargetResolution(screen).build();
+        Preview preview = new Preview(pConfig);
+
+        preview.setOnPreviewOutputUpdateListener(
+                new Preview.OnPreviewOutputUpdateListener() {
+                    //to update the surface texture we  have to destroy it first then re-add it
+                    @Override
+                    public void onUpdated(Preview.PreviewOutput output){
+                        ViewGroup parent = (ViewGroup) mTextureView.getParent();
+                        parent.removeView(mTextureView);
+                        parent.addView(mTextureView, 0);
+
+                        mTextureView.setSurfaceTexture(output.getSurfaceTexture());
+                        updateTransform();
+                    }
+                });
+
+
+        ImageCaptureConfig imageCaptureConfig = new ImageCaptureConfig.Builder().setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
+                .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation()).build();
+        final ImageCapture imgCap = new ImageCapture(imageCaptureConfig);
+
+//        findViewById(R.id.imgCapture).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                File file = new File(Environment.getExternalStorageDirectory() + "/" + System.currentTimeMillis() + ".png");
+//                imgCap.takePicture(file, new ImageCapture.OnImageSavedListener() {
+//                    @Override
+//                    public void onImageSaved(@NonNull File file) {
+//                        String msg = "Pic captured at " + file.getAbsolutePath();
+//                        Toast.makeText(getBaseContext(), msg,Toast.LENGTH_LONG).show();
+//                    }
+//
+//                    @Override
+//                    public void onError(@NonNull ImageCapture.UseCaseError useCaseError, @NonNull String message, @Nullable Throwable cause) {
+//                        String msg = "Pic capture failed : " + message;
+//                        Toast.makeText(getBaseContext(), msg,Toast.LENGTH_LONG).show();
+//                        if(cause != null){
+//                            cause.printStackTrace();
+//                        }
+//                    }
+//                });
+//            }
+//        });
+
+        //bind to lifecycle:
+        CameraX.bindToLifecycle((LifecycleOwner)this, preview, imgCap);
+
     }
+
+
+
+
+    private void updateTransform(){
+        Matrix mx = new Matrix();
+        float w = mTextureView.getMeasuredWidth();
+        float h = mTextureView.getMeasuredHeight();
+
+        float cX = w / 2f;
+        float cY = h / 2f;
+
+        int rotationDgr;
+        int rotation = (int)mTextureView.getRotation();
+
+        switch(rotation){
+            case Surface.ROTATION_0:
+                rotationDgr = 0;
+                break;
+            case Surface.ROTATION_90:
+                rotationDgr = 90;
+                break;
+            case Surface.ROTATION_180:
+                rotationDgr = 180;
+                break;
+            case Surface.ROTATION_270:
+                rotationDgr = 270;
+                break;
+            default:
+                return;
+        }
+
+        mx.postRotate((float)rotationDgr, cX, cY);
+        mTextureView.setTransform(mx);
+    }
+
+
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
