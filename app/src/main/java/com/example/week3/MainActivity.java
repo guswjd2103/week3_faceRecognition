@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     private boolean isFabOpen = false;
     Retrofit retrofit;
     RetrofitInterface retrofitInterface;
-//    boolean running = true;
     private Thread thread;
     private RelativeLayout bigView;
     private Button shareButton;
@@ -83,17 +82,12 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     private Button storeButton;
     private LinearLayout buttonLayout;
     private String files;
-    String basePath = null;
-//    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mContext = getApplicationContext();
-
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this ,Manifest.permission.CAMERA)) {
@@ -104,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                         1);
             }
         }
-
 
         buttonLayout = findViewById(R.id.ButtonLayout);
         imageView = findViewById(R.id.image);
@@ -118,8 +111,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         fab_sub2 = (FloatingActionButton) findViewById(R.id.fab_sub2_bring);
         fab_sub3 = (FloatingActionButton) findViewById(R.id.fab_sub3_webcam);
 
-
-
         fab_main.setOnClickListener(this);
         fab_sub1.setOnClickListener(this);
         fab_sub2.setOnClickListener(this);
@@ -127,32 +118,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         imageView.setOnClickListener(this);
         videoView.setOnClickListener(this);
 
-//        File directory = new File(android.os.Environment.getExternalStorageDirectory() + File.separator + AppConstant.PHOTO_ALBUM);
-//        File a = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-//        Log.d("aaa",mediaStorageDir.getPath());
-
-//        if (!directory.exists()){
-//            if(!directory.mkdirs()){
-//                Log.e("tab2","failed to create directory");
-//            }
-//        }
-//        basePath = directory.getPath();
-//        thread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while(running) {
-//                    try {
-//                        Thread.sleep(120000);
-//                    } catch (Exception e){};
-//                }
-//            }
-//        });
-
-//        shareButton = (Button) findViewById(R.id.Share);
+        shareButton = (Button) findViewById(R.id.Share);
         storeButton = (Button) findViewById(R.id.Store);
-//        backButton = (Button) findViewById(R.id.Back);
-//        bigView = findViewById(R.id.bigView);
-//        imageView = (ImageView)findViewById(R.id.imgView);
         storeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -180,8 +147,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             case R.id.fab_sub1_camera:
                 toggleFab();
-//                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-//                startActivity(intent);
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent. setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "video/*");
                 startActivityForResult(intent, 2);
@@ -213,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     private void toggleFab() {
 
         if (isFabOpen) {
-//            fab_main.setImageResource(R.drawable.ic_add);
             fab_sub1.startAnimation(fab_close);
             fab_sub2.startAnimation(fab_close);
             fab_sub3.startAnimation(fab_close);
@@ -223,7 +187,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             isFabOpen = false;
 
         } else {
-//            fab_main.setImageResource(R.drawable.ic_close);
             fab_sub1.startAnimation(fab_open);
             fab_sub2.startAnimation(fab_open);
             fab_sub3.startAnimation(fab_open);
@@ -299,81 +262,6 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             videoView.setVideoURI(uri);
             videoView.requestFocus();
             videoView.start();
-
-            // Make sure the request was successful
-//            if (resultCode == RESULT_OK) {
-//                File file = new File(getPath(getApplicationContext(), data.getData()));
-//                Log.d("hi", getPath(getApplicationContext(), data.getData()));
-//
-//                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-//                MultipartBody.Part body = MultipartBody.Part.createFormData("img", file.getName(), requestFile);
-//                Log.d("filename", body.toString());
-//
-//                retrofit = new Retrofit.Builder().baseUrl(retrofitInterface.API_URL).addConverterFactory(GsonConverterFactory.create()).build();
-//                retrofitInterface = retrofit.create(RetrofitInterface.class);
-//
-//                Call<String> call = retrofitInterface.uploadVideo(body);
-////                thread.start();
-//
-//                call.enqueue(new Callback<String>() {
-//                    @Override
-//                    public void onResponse(Call<String> call, Response<String> response) { //response.body = string
-//                        String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
-//                        Log.d("filename",filename);
-//
-//                        if (response.isSuccessful()) {
-//                            Log.d("성공", "성공");
-//
-//                            //화면에 이미지 보여주기
-//                            try {
-//                                imageView.setVisibility(View.GONE);
-//                                videoView.setVisibility(View.VISIBLE);
-//                                Picasso.with(getApplicationContext()).load(filename).into(imageView);
-//
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                        else {
-//                            Log.d("onResponse", "failure");
-//                        }
-//
-////                        Thread thread2 = new Thread() {
-////                            @Override
-////                            public void run() {
-////                                mHandler.post(new Runnable() {
-////                                @Override
-////                                public void run() {
-////                                    String filename = "http://192.168.0.60:80/mosaicVideo/" + response.body();
-////                                    Log.d("filename",filename);
-////                                    if (response.isSuccessful()) {
-////                                        Log.d("성공", "성공");
-////
-////                                        //화면에 이미지 보여주기
-////                                        try {
-////
-////                                            Picasso.with(getApplicationContext()).load(filename).into(imageView);
-////
-////                                        } catch (Exception e) {
-////                                            e.printStackTrace();
-////                                        }
-////                                    }
-////                                    else {
-////                                        Log.d("onResponse", "failure");
-////                                    }
-////                                }
-////                            });
-////                            }
-////                        };
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Call<String> call, Throwable t) {
-//                        Log.d("onFailure", t.toString());
-//                    }
-//                });
-//
-//            }
         }
     }
 
