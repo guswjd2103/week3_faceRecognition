@@ -169,6 +169,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             case R.id.fab_sub1_camera:
                 toggleFab();
+//                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+//                startActivity(intent);
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent. setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "video/*");
                 startActivityForResult(intent, 2);
@@ -217,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 File file = new File(getPath(getApplicationContext(), data.getData()));
+
                 Log.d("hihi", getPath(getApplicationContext(), data.getData()));
 
                 RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -248,6 +251,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                         else {
                             Log.d("onResponse", "failure");
                         }
+
+
                     }
 
                     @Override
