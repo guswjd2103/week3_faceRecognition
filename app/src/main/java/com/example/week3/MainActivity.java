@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             case R.id.fab_sub3_webcam:
                 toggleFab();
-                Intent intent3 = new Intent(MainActivity.this, cameraActivity.class);
+                Intent intent3 = new Intent(MainActivity.this, OpenCVActivity.class);
                 startActivity(intent3);
                 break;
 

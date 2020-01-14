@@ -1,0 +1,23 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:1-7:12
+	package
+		ADDED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:3:7-27
+		INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml
+		INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml
+	android:versionName
+		ADDED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:5:7-34
+		INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml
+		INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:2:11-69
+	android:versionCode
+		ADDED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml:4:7-33
+		INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml
+		INJECTED from C:\Users\q\Desktop\week3_final\week3_faceRecognition\opencv\java\AndroidManifest.xml
